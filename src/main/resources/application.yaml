@@ -27,3 +27,7 @@ spring:
       path: /h2-console
       settings:
         web-allow-others: true
+
+# Add your Cloudinary URL here
+cloudinary:
+  url: "cloudinary://316247294394358:UAX-YzaamuupS9iNrCv0gYdisCk@delm0zwcu"

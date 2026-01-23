@@ -19,5 +19,6 @@ public class BlogPostDTO {
     private LocalDateTime publishDate;
     private Boolean published;
     private Boolean featured;
-    
+    private String coverImageUrl;
+    private Integer categoryId;
 }

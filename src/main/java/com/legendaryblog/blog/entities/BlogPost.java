@@ -11,7 +11,7 @@ import java.util.UUID;
 public class BlogPost {
 
     @Id
-    @GeneratedValue(generator = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID) // Modern way for Spring Boot 3+
     private UUID id;
 
     private String title;
@@ -24,6 +24,8 @@ public class BlogPost {
     private LocalDateTime publishDate;
     private Boolean published;
     private Boolean featured;
+    private String coverImageUrl;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)

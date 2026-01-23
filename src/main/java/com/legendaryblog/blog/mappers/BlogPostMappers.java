@@ -15,7 +15,7 @@ public class BlogPostMappers {
         dto.setPublishDate(bp.getPublishDate());
         dto.setPublished(bp.getPublished());
         dto.setFeatured(bp.getFeatured());
-
+        dto.setCoverImageUrl(bp.getCoverImageUrl());
 
         return dto;
     }
@@ -31,7 +31,7 @@ public class BlogPostMappers {
         bp.setPublishDate(dto.getPublishDate());
         bp.setPublished(dto.getPublished());
         bp.setFeatured(dto.getFeatured());
-
+        bp.setCoverImageUrl(dto.getCoverImageUrl());
         return bp;
     }
 }
