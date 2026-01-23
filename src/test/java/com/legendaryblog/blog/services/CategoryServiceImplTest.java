@@ -105,8 +105,57 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void updateCategory() {
+    void updateCategory_shouldReturnUpdatedCategory_whenDataIsValid() {
+
+        CategoryDTO request = createDTO(1, "Test2");
+        Category existing = createCategory(1, "Test1");
+
+        when(categoryRepository.findCategoriesById(request.getId())).thenReturn(Optional.of(existing));
+        when(categoryRepository.findCategoryByName(request.getName())).thenReturn(Optional.empty());
+        when(categoryRepository.save(any(Category.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        CategoryDTO result = categoryService.updateCategory(request);
+
+        assertNotNull(result);
+        assertEquals(result.getId(), request.getId());
+        assertEquals(result.getName(), request.getName());
+
+        verify(categoryRepository, times(1)).findCategoriesById(request.getId());
+        verify(categoryRepository, times(1)).save(any());
     }
+
+    @Test
+    void updateCategory_shouldThrowResourceNotFoundException_whenIdIsDoesNotExist() {
+
+        CategoryDTO request = createDTO(99, "Test1");
+
+
+        when(categoryRepository.findCategoriesById(request.getId())).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> categoryService.updateCategory(request));
+
+        verify(categoryRepository, times(1)).findCategoriesById(request.getId());
+        verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void updateCategory_shouldThrowConflictException_whenNameAlreadyExists() {
+
+        CategoryDTO request = createDTO(1, "Test2");
+        Category existing = createCategory(1, "Test1");
+        Category existingWithSameName = createCategory(2, "Test2");
+
+        when(categoryRepository.findCategoriesById(request.getId())).thenReturn(Optional.of(existing));
+        when(categoryRepository.findCategoryByName(request.getName())).thenReturn(Optional.of(existingWithSameName));
+
+
+        assertThrows(ConflictException.class, () -> categoryService.updateCategory(request));
+
+        verify(categoryRepository, times(1)).findCategoriesById(request.getId());
+        verify(categoryRepository, times(1)).findCategoryByName(request.getName());
+        verify(categoryRepository, never()).save(any());
+    }
+
 
     @Test
     void deleteCategory_shouldReturnDeletedCategory_whenCategoryExists() {
