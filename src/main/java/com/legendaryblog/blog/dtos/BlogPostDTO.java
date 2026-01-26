@@ -20,5 +20,8 @@ public class BlogPostDTO {
     private Boolean published;
     private Boolean featured;
     private String coverImageUrl;
-    private Integer categoryId;
+
+    private CategoryDTO categoryDTO;
+
+
 }

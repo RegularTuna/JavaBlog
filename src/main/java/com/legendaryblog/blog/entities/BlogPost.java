@@ -11,7 +11,7 @@ import java.util.UUID;
 public class BlogPost {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) // Modern way for Spring Boot 3+
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String title;
