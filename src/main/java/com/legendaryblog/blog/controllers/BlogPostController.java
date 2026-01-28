@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -39,16 +40,22 @@ public class BlogPostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<List<BlogPostDTO>> fetchBlogPosts(){
+    public ResponseEntity<Map<String, Object>> fetchBlogPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
 
-        List<BlogPostDTO> blogPostDTOs = blogPostService.fetchBlogPosts();
+        Map<String, Object> blogPostDTOs = blogPostService.fetchBlogPosts(page,size);
 
         return new ResponseEntity<>(blogPostDTOs, HttpStatus.OK);
     }
 
-    @PatchMapping("/post/{id}")
-    public ResponseEntity<BlogPostDTO> patchPost(@PathVariable UUID id, @RequestBody BlogPostDTO blogPostDTO){
-        BlogPostDTO updatedPost = blogPostService.patchPost(id,blogPostDTO);
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<BlogPostDTO> patchPost(
+            @PathVariable UUID id,
+            @RequestPart("patch") BlogPostDTO blogPostDTO,
+            @RequestPart("image")MultipartFile image) throws IOException {
+
+        BlogPostDTO updatedPost = blogPostService.patchPost(id,blogPostDTO,image);
 
         return new ResponseEntity<>(blogPostDTO, HttpStatus.OK);
     }

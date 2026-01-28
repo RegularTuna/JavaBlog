@@ -10,14 +10,16 @@ import com.legendaryblog.blog.mappers.CategoryMappers;
 import com.legendaryblog.blog.repositories.BlogPostRepository;
 import com.legendaryblog.blog.repositories.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class BlogPostServiceImpl implements BlogPostService{
@@ -34,6 +36,8 @@ public class BlogPostServiceImpl implements BlogPostService{
     @Override
     public BlogPostDTO createBlogPost(BlogPostDTO blogPostDTO, MultipartFile image) throws IOException {
 
+
+
         String imageUrl = fileUploadService.uploadImage(image);
 
         BlogPost blogPost = BlogPostMappers.mapToEntity(blogPostDTO);
@@ -45,8 +49,17 @@ public class BlogPostServiceImpl implements BlogPostService{
 
         blogPost.setCoverImageUrl(imageUrl);
 
+        if(blogPostDTO.getPublished() == true){
+            blogPost.setPublishDate(LocalDateTime.now());
+        }
+
         BlogPost savedPost = blogPostRepository.save(blogPost);
-        return BlogPostMappers.mapBlogPostToDTO(savedPost);
+
+        BlogPostDTO result = BlogPostMappers.mapBlogPostToDTO(savedPost);
+
+        result.setCategoryDTO(CategoryMappers.mapToDTO(category));
+
+        return result;
     }
 
     @Override
@@ -58,44 +71,74 @@ public class BlogPostServiceImpl implements BlogPostService{
     }
 
     @Override
-    public List<BlogPostDTO> fetchBlogPosts() {
+    public Map<String, Object> fetchBlogPosts(int page, int size) {
 
-        List<BlogPost> posts = blogPostRepository.findAll();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("publishDate").descending());
+
+        Page<BlogPost> postPage = blogPostRepository.findAll(pageable);
 
         List<BlogPostDTO> postsDTO = new ArrayList<>();
 
-        for(BlogPost post : posts){
+        for(BlogPost post : postPage.getContent()){
             ;
             postsDTO.add(BlogPostMappers.mapBlogPostToDTO(post));
         }
 
-        return postsDTO;
+        Map<String,Object> response = new HashMap<>();
+
+        response.put("posts",postsDTO);
+        response.put("currentPage", postPage.getNumber());
+        response.put("totalItems", postPage.getTotalElements());
+        response.put("totalPages", postPage.getTotalPages());
+        return response;
     }
 
     @Override
-    public BlogPostDTO patchPost(UUID id, BlogPostDTO updateDTO) {
+    public BlogPostDTO patchPost(UUID id, BlogPostDTO updateDTO, MultipartFile image) throws IOException {
 
         BlogPost existingBp = blogPostRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Blog not found."));
 
-        if ( updateDTO.getTitle() != null) existingBp.setTitle(updateDTO.getTitle());
-        if (updateDTO.getDescription() != null) existingBp.setDescription(updateDTO.getDescription());
-        if (updateDTO.getContent() != null) existingBp.setContent(updateDTO.getContent());
-        if (updateDTO.getPublished() != null) existingBp.setPublished(updateDTO.getPublished());
-        if (updateDTO.getFeatured() != null) existingBp.setFeatured(updateDTO.getFeatured());
-        if (updateDTO.getCoverImageUrl() != null) existingBp.setCoverImageUrl(updateDTO.getCoverImageUrl());
-
-
-        if (updateDTO.getCategoryDTO() != null) {
-            Category category = categoryRepository.findById(updateDTO.getCategoryDTO().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-            existingBp.setCategory(category);
+        if (updateDTO.getTitle() != null && !Objects.equals(updateDTO.getTitle(), existingBp.getTitle())) {
+            existingBp.setTitle(updateDTO.getTitle());
         }
 
-        BlogPostDTO updatedBp = BlogPostMappers.mapBlogPostToDTO(existingBp);
+        if (updateDTO.getDescription() != null && !Objects.equals(updateDTO.getDescription(), existingBp.getDescription())) {
+            existingBp.setDescription(updateDTO.getDescription());
+        }
+
+        if (updateDTO.getContent() != null && !Objects.equals(updateDTO.getContent(), existingBp.getContent())) {
+            existingBp.setContent(updateDTO.getContent());
+        }
+
+        if (updateDTO.getPublished() != null && !Objects.equals(updateDTO.getPublished(), existingBp.getPublished())) {
+            existingBp.setPublished(updateDTO.getPublished());
+        }
+
+        if (updateDTO.getFeatured() != null && !Objects.equals(updateDTO.getFeatured(), existingBp.getFeatured())) {
+            existingBp.setFeatured(updateDTO.getFeatured());
+        }
+
+        if (!image.isEmpty()) {
+            String imageUrl = fileUploadService.uploadImage(image);
+            existingBp.setCoverImageUrl(imageUrl);
+        }
+
+        if (updateDTO.getCategoryDTO() != null && updateDTO.getCategoryDTO().getId() != null) {
+            if (!Objects.equals(updateDTO.getCategoryDTO().getId(), existingBp.getCategory().getId())) {
+                Category newCategory = categoryRepository.findById(updateDTO.getCategoryDTO().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                existingBp.setCategory(newCategory);
+            }
+        }
+
+        if( existingBp.getPublishDate() == null && existingBp.getPublished() == true){
+            existingBp.setPublishDate(LocalDateTime.now());
+        }
 
         blogPostRepository.save(existingBp);
 
+        BlogPostDTO updatedBp = BlogPostMappers.mapBlogPostToDTO(blogPostRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Post not found")));
         return updatedBp;
     }
 
