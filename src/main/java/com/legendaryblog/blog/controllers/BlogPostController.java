@@ -16,13 +16,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/blogpost")
 public class BlogPostController {
 
     @Autowired
     BlogPostService blogPostService;
 
-    @PostMapping(value = "/blogpost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BlogPostDTO> createBlogPost(
             @RequestPart("post") BlogPostDTO blogPostDTO,
             @RequestPart("image")MultipartFile image
@@ -31,7 +31,7 @@ public class BlogPostController {
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
 
-    @GetMapping("/post/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<BlogPostDTO> fetchBlogPost(@PathVariable UUID id){
 
         BlogPostDTO blogPostDTO = blogPostService.fetchBlogPost(id);
@@ -61,7 +61,7 @@ public class BlogPostController {
     }
 
 
-    @DeleteMapping("/post/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<BlogPostDTO> deleteBlogPost(@PathVariable UUID id){
 
         BlogPostDTO blogpostDTO = blogPostService.deleteBlogPost(id);

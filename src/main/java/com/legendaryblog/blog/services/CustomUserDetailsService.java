@@ -1,6 +1,7 @@
 package com.legendaryblog.blog.services;
 
 import com.legendaryblog.blog.entities.User;
+import com.legendaryblog.blog.exceptions.ResourceNotFoundException;
 import com.legendaryblog.blog.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -19,11 +21,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User user = repository.findByUsername(username);
+        Optional<User> user = Optional.ofNullable(repository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found")));
 
-        if (user == null)
-            throw new UsernameNotFoundException("User not found");
-        return new org.springframework.security.core.userdetails.User(user.getUsername(),user.getPassword(), new ArrayList<>());
+
+        return new org.springframework.security.core.userdetails.User(user.get().getUsername(),user.get().getPassword(), new ArrayList<>());
 
     }
+
+
+
 }

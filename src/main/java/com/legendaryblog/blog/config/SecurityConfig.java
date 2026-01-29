@@ -3,6 +3,7 @@ package com.legendaryblog.blog.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -38,21 +39,25 @@ public class SecurityConfig {
         http
                 // 1. Disable CSRF using the lambda syntax
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**") //h2
+                        //.ignoringRequestMatchers("/h2-console/**") //h2
                         .disable())
 
                 // 2. Configure Authorization
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**").permitAll() //h2
+                        //.requestMatchers("/h2-console/**").permitAll() //h2
+
+                        .requestMatchers(HttpMethod.GET, "/api/blogpost/**").permitAll()
+
                         .requestMatchers("/api/register", "/api/login").permitAll()
                         .anyRequest().authenticated()
                 )
 
+                /*
                 .headers(headers -> headers
                         // 2. Allow H2 to render inside frames
                         .frameOptions(frame -> frame.sameOrigin())
                 ) //h2
-
+*/
                 // 3. Set Session Policy to Stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
