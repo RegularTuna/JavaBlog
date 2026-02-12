@@ -10,14 +10,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
+
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/category")
 public class CategoryController {
 
     @Autowired
     private CategoryServiceImpl categoryService;
 
-    @PostMapping("/category")
+    @PostMapping()
     public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryDTO categoryDTO){
         CategoryDTO savedCategory = categoryService.createCategory(categoryDTO);
 
@@ -31,7 +33,7 @@ public class CategoryController {
         return new ResponseEntity<>(categories, HttpStatus.OK);
     }
 
-    @GetMapping("/category/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> getCategory(@PathVariable Integer id){
 
         CategoryDTO categoryDTO = categoryService.fetchCategoryById(id);
@@ -39,7 +41,7 @@ public class CategoryController {
         return new ResponseEntity<>(categoryDTO, HttpStatus.OK);
     }
 
-    @PutMapping("/category")
+    @PutMapping()
     public ResponseEntity<CategoryDTO> updateCategory(@RequestBody CategoryDTO categoryDTO){
 
         CategoryDTO dto = categoryService.updateCategory(categoryDTO);
@@ -47,7 +49,7 @@ public class CategoryController {
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
-    @DeleteMapping("/category/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity<CategoryDTO> deleteCategory(@PathVariable Integer id){
 
         CategoryDTO categoryDTO = categoryService.deleteCategory(id);

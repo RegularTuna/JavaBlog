@@ -2,6 +2,8 @@ package com.legendaryblog.blog.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,6 +30,7 @@ public class BlogPost {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Category category;
 }

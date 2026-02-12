@@ -36,11 +36,24 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);
-            username = jwtUtil.extractUsername(token);
+            try {
+                username = jwtUtil.extractUsername(token);
+            } catch (io.jsonwebtoken.ExpiredJwtException e) {
+                // We catch it here so the filter doesn't crash.
+                // username remains null, so the next 'if' block is skipped.
+                logger.warn("JWT token is expired");
+            } catch (Exception e) {
+                logger.warn("JWT token is invalid or malformed");
+            }
         }
 
+        // If username is null (because extraction failed or no header),
+        // we skip setting the security context.
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            // Note: validateToken might also throw ExpiredJwtException,
+            // so you can wrap this too if your utility doesn't handle it internally.
             if (jwtUtil.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -48,6 +61,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+
+        // This is the most important part: the chain continues regardless!
         chain.doFilter(request, response);
     }
 }

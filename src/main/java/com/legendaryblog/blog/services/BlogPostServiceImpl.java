@@ -147,6 +147,8 @@ public class BlogPostServiceImpl implements BlogPostService{
         BlogPost post = blogPostRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("BlogPost not found"));
         blogPostRepository.deleteById(id);
 
+
+
         return BlogPostMappers.mapBlogPostToDTO(post);
     }
 

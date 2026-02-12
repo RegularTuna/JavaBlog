@@ -11,4 +11,5 @@ public interface CategoryService {
     public CategoryDTO fetchCategoryById(Integer id);
     public CategoryDTO updateCategory(CategoryDTO categoryDTO);
     public CategoryDTO deleteCategory(Integer id);
+
 }

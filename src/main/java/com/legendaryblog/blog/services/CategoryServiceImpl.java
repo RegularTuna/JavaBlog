@@ -1,10 +1,12 @@
 package com.legendaryblog.blog.services;
 
 import com.legendaryblog.blog.dtos.CategoryDTO;
+import com.legendaryblog.blog.entities.BlogPost;
 import com.legendaryblog.blog.entities.Category;
 import com.legendaryblog.blog.exceptions.ConflictException;
 import com.legendaryblog.blog.exceptions.ResourceNotFoundException;
 import com.legendaryblog.blog.mappers.CategoryMappers;
+import com.legendaryblog.blog.repositories.BlogPostRepository;
 import com.legendaryblog.blog.repositories.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,10 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private BlogPostRepository blogPostRepository;
+
 
     @Override
     public CategoryDTO createCategory(CategoryDTO categoryDTO){
@@ -76,6 +82,8 @@ public class CategoryServiceImpl implements CategoryService{
     @Override
     public CategoryDTO deleteCategory(Integer id) {
         Category category = categoryRepository.findCategoriesById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+
         categoryRepository.deleteById(id);
 
         return CategoryMappers.mapToDTO(category);
